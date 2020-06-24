@@ -206,14 +206,14 @@ ros::Publisher pub_channels( "radio_channels", &channels_msg);
 
 void setup() {
 
+  // Init Camera
+  camera_init();
+
   // Init PWM output logic and set to default 1500 us (idle)
   pwm_gpio_initialize();
   led_gpio_initialize();
   mcpwm_set_throttle_pwm (1500);
   mcpwm_set_steering_pwm (1500);
-
-  // Init Camera
-  camera_init();
 
   //Init SBUS
   x8r.begin();
@@ -251,7 +251,6 @@ void loop() {
       channels_msg.ch4=channels[3];
       channels_msg.ch5=channels[4];
       channels_msg.ch6=channels[5];
-      digitalWrite(33, HIGH);
     }
     pub_channels.publish(&channels_msg);
   } else {
