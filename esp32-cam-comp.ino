@@ -19,8 +19,7 @@
 //LED
 #define BUILT_IN_LED               33   // built in ESP32 Led
 #define GPIO_OUTPUT_LED            4
-Adafruit_NeoPixel statusLed (1, GPIO_OUTPUT_LED, NEO_GRB + NEO_KHZ800);
-
+//Adafruit_NeoPixel statusLed (1, GPIO_OUTPUT_LED, NEO_GRB + NEO_KHZ800);
 
 void led_gpio_initialize (void) {
   pinMode(BUILT_IN_LED, OUTPUT);
@@ -33,8 +32,8 @@ void led_gpio_initialize (void) {
 #define PWM_RC_STEERING_OUTUT_PIN 15   //Set GPIO 15 as PWM1A
 
 #define PWM_FREQ 50
-const int throttleChannel = 0;
-const int steeringChannel = 2;
+const int throttleChannel = 14;
+const int steeringChannel = 15;
 
 // Throttle and steering output order
 int cmd_throttle = 1500;
@@ -171,14 +170,11 @@ esp_err_t camera_capture() {
   static uint seq=0;
   
   //acquire a frame
-  uint t0=millis();
   camera_fb_t * fb = esp_camera_fb_get();
   if (!fb) {
     ROS_LOG ("Camera Capture Failed");
     return ESP_FAIL;
   }
-  uint t1=millis();
-  Serial.printf("%d\n\r",t1-t0);
   image_msg.header.seq=seq++;
   image_msg.height = fb->height;
   image_msg.width = fb->width;
@@ -206,12 +202,15 @@ ros::Publisher pub_channels( "radio_channels", &channels_msg);
 
 void setup() {
 
-  // Init Camera
-  camera_init();
-
   // Init PWM output logic and set to default 1500 us (idle)
   pwm_gpio_initialize();
   led_gpio_initialize();
+
+  digitalWrite(BUILT_IN_LED, LOW);
+
+  // Init Camera
+  camera_init();
+
   mcpwm_set_throttle_pwm (1500);
   mcpwm_set_steering_pwm (1500);
 
@@ -223,6 +222,7 @@ void setup() {
   nh.advertise(pub_image);
   nh.advertise(pub_channels);
   
+  digitalWrite(BUILT_IN_LED, HIGH);
   ROS_LOG("Starting ESP32-CAM");  
 
 }
@@ -230,9 +230,9 @@ void setup() {
 
 void loop() {
 
-  while (!nh.connected()) {
-    nh.spinOnce();
-  }
+//  while (!nh.connected()) {
+//    nh.spinOnce();
+//  }
   
   // look for a good SBUS packet from the receiver
   if(x8r.read(&channels[0], &failSafe, &lostFrame)){
