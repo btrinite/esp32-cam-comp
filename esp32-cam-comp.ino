@@ -18,8 +18,9 @@
 
 //LED
 #define BUILT_IN_LED               33   // built in ESP32 Led
-#define GPIO_OUTPUT_LED            4
-//Adafruit_NeoPixel statusLed (1, GPIO_OUTPUT_LED, NEO_GRB + NEO_KHZ800);
+#define GPIO_OUTPUT_LED            2
+#define LED_COUNT 6
+Adafruit_NeoPixel statusLed (LED_COUNT, GPIO_OUTPUT_LED, NEO_GRB + NEO_KHZ800);
 
 void led_gpio_initialize (void) {
   pinMode(BUILT_IN_LED, OUTPUT);
@@ -200,6 +201,15 @@ bool lostFrame;
 robocars_msgs::robocars_radio_channels channels_msg;  
 ros::Publisher pub_channels( "radio_channels", &channels_msg);
 
+void switchLight() {
+  statusLed.setPixelColor(0, 128, 128, 128);
+  statusLed.setPixelColor(5, 128, 128, 128);
+  statusLed.setPixelColor(1, 128, 0, 0);
+  statusLed.setPixelColor(2, 128, 0, 0);
+  statusLed.setPixelColor(3, 128, 0, 0);
+  statusLed.setPixelColor(4, 128, 0, 0);
+  statusLed.show();
+}
 void setup() {
 
   // Init PWM output logic and set to default 1500 us (idle)
@@ -217,10 +227,16 @@ void setup() {
   //Init SBUS
   x8r.begin();
 
+  // LED init
+  statusLed.begin();
+  statusLed.show();
+  
   // Init ROS
   nh.initNode();
   nh.advertise(pub_image);
   nh.advertise(pub_channels);
+
+  switchLight();
   
   digitalWrite(BUILT_IN_LED, HIGH);
   ROS_LOG("Starting ESP32-CAM");  
